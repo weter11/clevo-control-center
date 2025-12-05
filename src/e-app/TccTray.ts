@@ -73,20 +73,7 @@ export class TccTray {
                          (chassisVendor !== undefined && chassisVendor.toLowerCase().includes('tuxedo')) ||
                          (sysVendor !== undefined && sysVendor.toLowerCase().includes('tuxedo'));
 
-        if (isTuxedo) {
-            if (deviceName !== undefined &&
-                (deviceName === 'STELLARIS1XI04' ||
-                 deviceName === 'STEPOL1XA04' ||
-                 deviceName === 'STELLARIS1XI05' ||
-                 deviceName === 'STELLARIS16I06' ||
-                 deviceName === 'STELLARIS17I06')) {
-                showAquarisMenu = true;
-            } else {
-                showAquarisMenu = false;
-            }
-        } else {
-            showAquarisMenu = true;
-        }
+        showAquarisMenu = false;
 
         const contextMenu = Menu.buildFromTemplate([
             { label: 'TUXEDO Control Center', type: 'normal', click: () => this.events.startTCCClick() },

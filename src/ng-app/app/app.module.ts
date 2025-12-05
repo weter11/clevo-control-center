@@ -56,7 +56,7 @@ import { MatMenuModule } from '@angular/material/menu';
 
 import { DecimalPipe, registerLocaleData } from '@angular/common';
 import { ProfileManagerComponent } from './profile-manager/profile-manager.component';
-import { SupportComponent } from './support/support.component';
+
 import { HttpClientModule } from '@angular/common/http';
 import { ProfileOverviewTileComponent } from './profile-overview-tile/profile-overview-tile.component';
 import { ProfileDetailsEditComponent } from './profile-details-edit/profile-details-edit.component';
@@ -72,19 +72,19 @@ import { OverlayModule } from '@angular/cdk/overlay';
 
 import { GaugeModule } from 'angular-gauge';
 import { GlobalSettingsComponent } from './global-settings/global-settings.component';
-import { ShutdownTimerComponent } from './shutdown-timer/shutdown-timer.component';
+
 import { ToolsComponent } from "./tools/tool.component";
 import { KeyboardBacklightComponent } from "./keyboard-backlight/keyboard-backlight.component";
-import { ChangeCryptPasswordComponent } from './change-crypt-password/change-crypt-password.component';
+
 import { FanGraphComponent } from './fan-graph/fan-graph.component';
 
 import { ChartsModule, ThemeService } from 'ng2-charts';
 import { ColorPickerModule } from 'ngx-color-picker';
 import { MainGuiComponent } from './main-gui/main-gui.component';
-import { AquarisControlComponent } from './aquaris-control/aquaris-control.component';
+
 import { DialogInputTextComponent } from './dialog-input-text/dialog-input-text.component';
 import { DialogConfirmComponent } from './dialog-confirm/dialog-confirm.component';
-import { TomteGuiComponent } from './tomte-gui/tomte-gui.component';
+
 import { ProfileConflictDialogService } from './profile-conflict-dialog/profile-conflict-dialog.service';
 import { ProfileConflictComponent } from './profile-conflict-dialog/profile-conflict-dialog.component';
 import { ChargingSettingsComponent } from './charging-settings/charging-settings.component';
@@ -105,26 +105,26 @@ declare const require;
   declarations: [
     AppComponent,
     ProfileManagerComponent,
-    SupportComponent,
+
     ProfileOverviewTileComponent,
     ProfileDetailsEditComponent,
     InfoComponent,
     CpuDashboardComponent,
     GlobalSettingsComponent,
-    ShutdownTimerComponent,
+
     ToolsComponent,
     KeyboardBacklightComponent,
-    ChangeCryptPasswordComponent,
+
     FanGraphComponent,
     MainGuiComponent,
-    AquarisControlComponent,
+
     DialogInputTextComponent,
     DialogConfirmComponent,
     DialogChoiceComponent,
     ChargingSettingsComponent,
     WebcamSettingsComponent,
     WebcamPreviewComponent,
-    TomteGuiComponent,
+
     ProfileConflictComponent,
     KeyboardVisualComponent,
     DialogWaitingComponent,

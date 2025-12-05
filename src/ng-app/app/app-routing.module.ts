@@ -27,18 +27,18 @@ import {
 } from "./settings.resolver";
 
 import { ProfileManagerComponent } from "./profile-manager/profile-manager.component";
-import { SupportComponent } from "./support/support.component";
+
 import { InfoComponent } from "./info/info.component";
 import { CpuDashboardComponent } from "./cpu-dashboard/cpu-dashboard.component";
 import { KeyboardBacklightComponent } from "./keyboard-backlight/keyboard-backlight.component";
 import { ToolsComponent } from "./tools/tool.component";
 import { GlobalSettingsComponent } from "./global-settings/global-settings.component";
 import { MainGuiComponent } from "./main-gui/main-gui.component";
-import { AquarisControlComponent } from "./aquaris-control/aquaris-control.component";
+
 import { WebcamSettingsComponent } from "./webcam-settings/webcam-settings.component";
 import { WebcamPreviewComponent } from "./webcam-preview/webcam-preview.component";
 import { WebcamSettingsGuard } from "./webcam.service";
-import { TomteGuiComponent } from "./tomte-gui/tomte-gui.component";
+
 import { PrimeDialogComponent } from "./prime-dialog/prime-dialog.component";
 import { PowerStateStatusResolver } from "./dashboard.resolver";
 import { X11StatusResolver } from "./x11.resolver";
@@ -55,7 +55,7 @@ const routes: Routes = [
                 path: "profile-manager/:profileId",
                 component: ProfileManagerComponent,
             },
-            { path: "support", component: SupportComponent },
+
             { path: "info", component: InfoComponent },
             {
                 path: "cpu-dashboard",
@@ -97,12 +97,12 @@ const routes: Routes = [
                 },
                 component: GlobalSettingsComponent,
             },
-            { path: "aquaris-control", component: AquarisControlComponent },
-            { path: "tomte-gui", component: TomteGuiComponent },
+
+
         ],
     },
     { path: "webcam-preview", component: WebcamPreviewComponent },
-    { path: "aquaris-control", component: AquarisControlComponent },
+
     {
         path: "prime-dialog",
         component: PrimeDialogComponent,

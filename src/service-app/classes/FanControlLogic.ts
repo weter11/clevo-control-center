@@ -59,8 +59,8 @@ export class ValueBuffer {
     }
 }
 
-const MAX_SPEED_JUMP = 2;
-const SPEED_JUMP_THRESHOLD = 20;
+const MAX_SPEED_JUMP = 28;
+const SPEED_JUMP_THRESHOLD = 50;
 
 export class FanControlLogic {
 

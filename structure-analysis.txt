@@ -1,0 +1,105 @@
+=== TUXEDO Control Center Structure Analysis ===
+
+Angular App Directory Structure:
+================================
+src/ng-app/app
+src/ng-app/app/charging-settings
+src/ng-app/app/dialog-waiting
+src/ng-app/app/webcam-settings
+src/ng-app/app/webcam-preview
+src/ng-app/app/prime-dialog
+src/ng-app/app/fan-graph
+src/ng-app/app/change-crypt-password
+src/ng-app/app/profile-details-edit
+src/ng-app/app/global-settings
+src/ng-app/app/shutdown-timer
+src/ng-app/app/profile-manager
+src/ng-app/app/fan-slider
+src/ng-app/app/dialog-confirm
+src/ng-app/app/dialog-input-text
+src/ng-app/app/tomte-gui
+src/ng-app/app/tools
+src/ng-app/app/keyboard-backlight
+src/ng-app/app/profile-overview-tile
+src/ng-app/app/main-gui
+src/ng-app/app/aquaris-control
+src/ng-app/app/dialog-choice
+src/ng-app/app/keyboard-visual
+src/ng-app/app/prime-select
+src/ng-app/app/info
+src/ng-app/app/cpu-dashboard
+src/ng-app/app/support
+src/ng-app/app/profile-conflict-dialog
+
+Component Count:
+================
+28
+
+All Angular Components:
+======================
+src/ng-app/app/app.component.ts
+src/ng-app/app/app.module.ts
+src/ng-app/app/app-routing.module.ts
+src/ng-app/app/aquaris-control/aquaris-control.component.ts
+src/ng-app/app/change-crypt-password/change-crypt-password.component.ts
+src/ng-app/app/charging-settings/charging-settings.component.ts
+src/ng-app/app/cpu-dashboard/cpu-dashboard.component.ts
+src/ng-app/app/dialog-choice/dialog-choice.component.ts
+src/ng-app/app/dialog-confirm/dialog-confirm.component.ts
+src/ng-app/app/dialog-input-text/dialog-input-text.component.ts
+src/ng-app/app/dialog-waiting/dialog-waiting.component.ts
+src/ng-app/app/fan-graph/fan-graph.component.ts
+src/ng-app/app/fan-slider/fan-slider.component.ts
+src/ng-app/app/global-settings/global-settings.component.ts
+src/ng-app/app/info/info.component.ts
+src/ng-app/app/keyboard-backlight/keyboard-backlight.component.ts
+src/ng-app/app/keyboard-visual/keyboard-visual.component.ts
+src/ng-app/app/main-gui/main-gui.component.ts
+src/ng-app/app/prime-dialog/prime-dialog.component.ts
+src/ng-app/app/prime-select/prime-select.component.ts
+src/ng-app/app/profile-conflict-dialog/profile-conflict-dialog.component.ts
+src/ng-app/app/profile-conflict-dialog/profile-conflict-dialog.module.ts
+src/ng-app/app/profile-details-edit/profile-details-edit.component.ts
+src/ng-app/app/profile-manager/profile-manager.component.ts
+src/ng-app/app/profile-overview-tile/profile-overview-tile.component.ts
+src/ng-app/app/shutdown-timer/shutdown-timer.component.ts
+src/ng-app/app/support/support.component.ts
+src/ng-app/app/tomte-gui/tomte-gui.component.ts
+src/ng-app/app/tools/tool.component.ts
+src/ng-app/app/webcam-preview/webcam-preview.component.ts
+src/ng-app/app/webcam-settings/webcam-settings.component.ts
+
+Service App Structure:
+=====================
+src/service-app
+src/service-app/classes
+
+File Sizes by Component:
+=======================
+176K	src/ng-app/app/keyboard-visual/
+116K	src/ng-app/app/profile-details-edit/
+100K	src/ng-app/app/webcam-settings/
+60K	src/ng-app/app/cpu-dashboard/
+56K	src/ng-app/app/aquaris-control/
+48K	src/ng-app/app/tomte-gui/
+40K	src/ng-app/app/global-settings/
+36K	src/ng-app/app/profile-manager/
+32K	src/ng-app/app/support/
+32K	src/ng-app/app/profile-overview-tile/
+32K	src/ng-app/app/profile-conflict-dialog/
+32K	src/ng-app/app/keyboard-backlight/
+32K	src/ng-app/app/charging-settings/
+28K	src/ng-app/app/main-gui/
+28K	src/ng-app/app/change-crypt-password/
+24K	src/ng-app/app/prime-select/
+24K	src/ng-app/app/prime-dialog/
+24K	src/ng-app/app/info/
+24K	src/ng-app/app/fan-slider/
+20K	src/ng-app/app/webcam-preview/
+20K	src/ng-app/app/shutdown-timer/
+20K	src/ng-app/app/fan-graph/
+16K	src/ng-app/app/dialog-waiting/
+16K	src/ng-app/app/dialog-confirm/
+16K	src/ng-app/app/dialog-choice/
+12K	src/ng-app/app/tools/
+12K	src/ng-app/app/dialog-input-text/

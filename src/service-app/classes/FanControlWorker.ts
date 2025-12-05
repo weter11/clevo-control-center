@@ -203,7 +203,7 @@ export class FanControlWorker extends DaemonWorker {
     }
 
     private setupTuxedoIO() {
-        this.initHardwareCapabilities();
+//        this.initHardwareCapabilities();
         this.initFallbackFanControl();
 
         const useFanControl = this.getFanControlStatus();
@@ -213,13 +213,13 @@ export class FanControlWorker extends DaemonWorker {
         }
     }
 
-    private initHardwareCapabilities(): void {
-        this.fansOffAvailable = ioAPI.getFansOffAvailable();
-        this.fansMinSpeedHWLimit = ioAPI.getFansMinSpeed();
+//    private initHardwareCapabilities(): void {
+//        this.fansOffAvailable = ioAPI.getFansOffAvailable();
+//        this.fansMinSpeedHWLimit = ioAPI.getFansMinSpeed();
 
-        this.tccd.dbusData.fansOffAvailable = this.fansOffAvailable;
-        this.tccd.dbusData.fansMinSpeed = this.fansMinSpeedHWLimit;
-    }
+//       this.tccd.dbusData.fansOffAvailable = this.fansOffAvailable;
+//        this.tccd.dbusData.fansMinSpeed = this.fansMinSpeedHWLimit;
+//    }
 
     private initFallbackFanControl(): void {
         const nrFans = ioAPI.getNumberFans();
@@ -412,7 +412,7 @@ export class FanControlWorker extends DaemonWorker {
         // from the max speed decided by each individual fan logic
         // Using the 'same speed' approach is necessary for uniwill devices since the fans on some
         // devices can not be controlled individually.
-        this.modeSameSpeed = true;
+        this.modeSameSpeed = false;
 
         // For each fan read and process sensor values
         for (const fanNumber of this.fans.keys()) {
