@@ -73,7 +73,7 @@ export class FanControlLogic {
 
     private lastSpeed = 0;
 
-    private useTable: string
+    private useTable: string;
 
     /**
      * Transition mode for fan speed changes

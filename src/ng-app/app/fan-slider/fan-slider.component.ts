@@ -285,18 +285,30 @@ export class FanSliderComponent implements OnInit {
     public addFanPoint(fanType: 'CPU' | 'GPU'): void {
         const points = fanType === 'CPU' ? this.cpuFanPoints : this.gpuFanPoints;
         if (points.length >= MAX_FAN_POINTS) {
+            console.warn(`Cannot add more points: maximum of ${MAX_FAN_POINTS} points reached for ${fanType}`);
             return;
         }
 
+        // Constants for temperature point calculation
+        const MAX_TEMP = 100;
+        const MIN_TEMP_INCREMENT = 1;
+        const TEMP_SPACING_DIVISOR = 2;
+
         // Add a new point at a temperature after the last point
         const lastPoint = points[points.length - 1];
-        // Ensure new temperature is unique and within bounds
-        const newTemp = Math.min(100, lastPoint.temp + Math.max(1, Math.floor((100 - lastPoint.temp) / 2)));
+        const remainingTempRange = MAX_TEMP - lastPoint.temp;
         
-        // Check if this temperature already exists
+        // Ensure new temperature is unique and within bounds
+        // Place it halfway between last point and max temperature, with minimum increment
+        const newTemp = Math.min(
+            MAX_TEMP, 
+            lastPoint.temp + Math.max(MIN_TEMP_INCREMENT, Math.floor(remainingTempRange / TEMP_SPACING_DIVISOR))
+        );
+        
+        // Check if this temperature already exists or is invalid
         const tempExists = points.some(p => p.temp === newTemp);
         if (tempExists || newTemp <= lastPoint.temp) {
-            // Can't add a valid point
+            console.warn(`Cannot add point: no valid temperature available for ${fanType} (last point at ${lastPoint.temp}°C)`);
             return;
         }
 
