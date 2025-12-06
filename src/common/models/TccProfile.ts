@@ -17,7 +17,7 @@
  * along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DefaultProfileIDs, LegacyDefaultProfileIDs } from "./DefaultProfiles";
+import { DefaultProfileIDs } from "./DefaultProfiles";
 import { ITccFanProfile } from "./TccFanTable";
 
 export interface ITccProfile {
@@ -110,9 +110,7 @@ export function generateProfileId(): string {
 
 export const profileImageMap = new Map<string, string>();
 
-profileImageMap.set(LegacyDefaultProfileIDs.Default, 'icon_profile_performance.svg');
-profileImageMap.set(LegacyDefaultProfileIDs.CoolAndBreezy, 'icon_profile_breezy.svg');
-profileImageMap.set(LegacyDefaultProfileIDs.PowersaveExtreme, 'icon_profile_energysaver.svg');
+
 profileImageMap.set('custom', 'icon_profile_custom.svg');
 
 profileImageMap.set(DefaultProfileIDs.MaxEnergySave, 'icon_profile_energysaver.svg');

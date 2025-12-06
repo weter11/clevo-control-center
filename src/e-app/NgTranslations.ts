@@ -116,7 +116,7 @@ export const profileIdToI18nId = new Map<string, IProfileTextMappings>()
     .set(DefaultProfileIDs.Quiet, { name: 'profileNameQuiet', description: 'profileDescQuiet' })
     .set(DefaultProfileIDs.Office, { name: 'profileNameOffice', description: 'profileDescOffice' })
     .set(DefaultProfileIDs.HighPerformance, { name: 'profileNameHighPerformance', description: 'profileDescHighPerformance' })
-    .set(LegacyDefaultProfileIDs.Default, { name: 'profileNameLegacyDefault', description: 'profileDescLegacyDefault' })
+
     .set(LegacyDefaultProfileIDs.CoolAndBreezy, { name: 'profileNameLegacyCoolAndBreezy', description: 'profileDescLegacyCoolAndBreezy' })
-    .set(LegacyDefaultProfileIDs.PowersaveExtreme, { name: 'profileNameLegacyPowersaveExtreme', description: 'profileDescLegacyPowersaveExtreme' });
+
 ;
