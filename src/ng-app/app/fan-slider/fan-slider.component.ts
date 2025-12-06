@@ -28,6 +28,9 @@ import {
     ITccFanProfile,
     ITccFanTableEntry,
     customFanPreset,
+    FanTransitionMode,
+    MIN_FAN_POINTS,
+    MAX_FAN_POINTS,
 } from "src/common/models/TccFanTable";
 import {
     fantableDatasets,
@@ -67,10 +70,26 @@ export class FanSliderComponent implements OnInit {
     @Input()
     public tempCustomFanCurve: ITccFanProfile;
 
-    public fanFormGroup: FormGroup;
+    public fanFormGroupCPU: FormGroup;
+    public fanFormGroupGPU: FormGroup;
 
     @Input()
     public showFanGraphs: boolean = false;
+
+    // Separate fan curves for CPU and GPU
+    public cpuFanPoints: ITccFanTableEntry[] = [];
+    public gpuFanPoints: ITccFanTableEntry[] = [];
+
+    // Transition modes
+    public cpuTransitionMode: FanTransitionMode = FanTransitionMode.SMOOTH;
+    public gpuTransitionMode: FanTransitionMode = FanTransitionMode.SMOOTH;
+    public FanTransitionMode = FanTransitionMode; // For template access
+
+    // Constants for template access
+    public MIN_FAN_POINTS = MIN_FAN_POINTS;
+    public MAX_FAN_POINTS = MAX_FAN_POINTS;
+
+    public activeFanType: 'CPU' | 'GPU' = 'CPU';
 
     private mutex = new Mutex();
     public tempsLabels: Label[] = Array.from(Array(100).keys())
@@ -88,43 +107,84 @@ export class FanSliderComponent implements OnInit {
         ) {}
         
     public ngOnInit(): void {
-        this.initFanFormGroup();
+        this.initFanFormGroups();
         this.updateFanChartDataset();
     }
 
-    private initFanFormGroup(): void {
+    private initFanFormGroups(): void {
         const fanCurve = this.tempCustomFanCurve || this.customFanCurve;
 
-        // currently only using cpu values for both gpu and cpu
-        const initialValues = fanCurve.tableCPU.reduce(
+        // Initialize CPU fan points
+        this.cpuFanPoints = fanCurve.tableCPU ? [...fanCurve.tableCPU] : [...customFanPreset.tableCPU];
+        const cpuInitialValues = this.cpuFanPoints.reduce(
             (acc, { temp, speed }) => {
                 return { ...acc, ...{ [`${temp}c`]: speed } };
             },
             {}
         );
+        this.fanFormGroupCPU = this.fb.group(cpuInitialValues);
 
-        this.fanFormGroup = this.fb.group(initialValues);
+        // Initialize GPU fan points
+        this.gpuFanPoints = fanCurve.tableGPU ? [...fanCurve.tableGPU] : [...customFanPreset.tableGPU];
+        const gpuInitialValues = this.gpuFanPoints.reduce(
+            (acc, { temp, speed }) => {
+                return { ...acc, ...{ [`${temp}c`]: speed } };
+            },
+            {}
+        );
+        this.fanFormGroupGPU = this.fb.group(gpuInitialValues);
+
+        // Initialize transition modes
+        this.cpuTransitionMode = fanCurve.cpuTransitionMode || FanTransitionMode.SMOOTH;
+        this.gpuTransitionMode = fanCurve.gpuTransitionMode || FanTransitionMode.SMOOTH;
     }
 
     public patchFanFormGroup(ac: AbstractControl): void {
-        ac.value.tableGPU.forEach(({ temp, speed }) => {
-            this.fanFormGroup.controls[`${temp}c`].setValue(speed);
-        });
+        // Patch both CPU and GPU form groups if values exist
+        if (ac.value.tableCPU) {
+            ac.value.tableCPU.forEach(({ temp, speed }) => {
+                if (this.fanFormGroupCPU.controls[`${temp}c`]) {
+                    this.fanFormGroupCPU.controls[`${temp}c`].setValue(speed);
+                }
+            });
+        }
+        if (ac.value.tableGPU) {
+            ac.value.tableGPU.forEach(({ temp, speed }) => {
+                if (this.fanFormGroupGPU.controls[`${temp}c`]) {
+                    this.fanFormGroupGPU.controls[`${temp}c`].setValue(speed);
+                }
+            });
+        }
         this.updateFanChartDataset();
     }
 
     public getFanFormGroupValues(): ITccFanProfile {
-        const fanTable = customFanPreset.tableCPU.map(({ temp }) => ({
+        const tableCPU = this.cpuFanPoints.map(({ temp }) => ({
             temp,
-            speed: this.fanFormGroup.get(`${temp}c`).value,
+            speed: this.fanFormGroupCPU.get(`${temp}c`).value,
         }));
-        return { tableCPU: fanTable, tableGPU: fanTable };
+        const tableGPU = this.gpuFanPoints.map(({ temp }) => ({
+            temp,
+            speed: this.fanFormGroupGPU.get(`${temp}c`).value,
+        }));
+        return {
+            tableCPU,
+            tableGPU,
+            cpuTransitionMode: this.cpuTransitionMode,
+            gpuTransitionMode: this.gpuTransitionMode
+        };
     }
 
-    private setFormValue(temp: number, sliderValue: number): void {
-        this.fanFormGroup.patchValue({
-            [`${temp}c`]: sliderValue,
-        });
+    private setFormValue(temp: number, sliderValue: number, fanType: 'CPU' | 'GPU'): void {
+        if (fanType === 'CPU') {
+            this.fanFormGroupCPU.patchValue({
+                [`${temp}c`]: sliderValue,
+            });
+        } else {
+            this.fanFormGroupGPU.patchValue({
+                [`${temp}c`]: sliderValue,
+            });
+        }
     }
 
 
@@ -140,32 +200,35 @@ export class FanSliderComponent implements OnInit {
 
     public async adjustSliderValues(
         sliderValue: number,
-        temp: number
+        temp: number,
+        fanType: 'CPU' | 'GPU'
     ): Promise<void> {
         await this.mutex.runExclusive(async () => {
             const clampedSliderValue = manageCriticalTemperature(
                 temp,
                 sliderValue
             );
-            const leftSliders = this.getSlidersToAdjust(temp, "left");
-            const rightSliders = this.getSlidersToAdjust(temp, "right");
+            const leftSliders = this.getSlidersToAdjust(temp, "left", fanType);
+            const rightSliders = this.getSlidersToAdjust(temp, "right", fanType);
 
-            this.adjustSliders(leftSliders, clampedSliderValue, temp, "left");
-            this.adjustSliders(rightSliders, clampedSliderValue, temp, "right");
+            this.adjustSliders(leftSliders, clampedSliderValue, temp, "left", fanType);
+            this.adjustSliders(rightSliders, clampedSliderValue, temp, "right", fanType);
 
             // slider won't adjust to formgroup value without delay
             await delay(10);
-            this.setFormValue(temp, clampedSliderValue);
+            this.setFormValue(temp, clampedSliderValue, fanType);
             this.updateFanChartDataset();
         });
     }
 
     private getSlidersToAdjust(
         temp: number,
-        direction: "left" | "right"
+        direction: "left" | "right",
+        fanType: 'CPU' | 'GPU'
     ): number[] {
         const comparison = direction === "left" ? "<" : ">";
-        return this.customFanPreset.tableCPU
+        const points = fanType === 'CPU' ? this.cpuFanPoints : this.gpuFanPoints;
+        return points
             .filter((entry: ITccFanTableEntry) =>
                 eval(`${entry.temp} ${comparison} ${temp}`)
             )
@@ -176,12 +239,15 @@ export class FanSliderComponent implements OnInit {
         sliders: number[],
         sliderValue: number,
         temp: number,
-        direction: "left" | "right"
+        direction: "left" | "right",
+        fanType: 'CPU' | 'GPU'
     ): void {
         const targetValue = manageCriticalTemperature(temp, sliderValue);
+        const formGroup = fanType === 'CPU' ? this.fanFormGroupCPU : this.fanFormGroupGPU;
 
         for (const slider of sliders) {
-            const sliderControl = this.fanFormGroup.get(`${slider}c`);
+            const sliderControl = formGroup.get(`${slider}c`);
+            if (!sliderControl) continue;
             const sliderControlValue = sliderControl.value;
 
             if (
@@ -193,8 +259,8 @@ export class FanSliderComponent implements OnInit {
         }
     }
 
-    public async updateComponents(sliderValue: number, temp: number) {
-        await this.adjustSliderValues(sliderValue, temp);
+    public async updateComponents(sliderValue: number, temp: number, fanType: 'CPU' | 'GPU') {
+        await this.adjustSliderValues(sliderValue, temp, fanType);
     }
 
     public dirtyFanFormGroup() {
@@ -215,6 +281,72 @@ export class FanSliderComponent implements OnInit {
         if (canvas) {
             canvas.style.display = this.showFanGraphs ? "flex" : "none";
         }
+    }
+
+    public addFanPoint(fanType: 'CPU' | 'GPU'): void {
+        const points = fanType === 'CPU' ? this.cpuFanPoints : this.gpuFanPoints;
+        if (points.length >= MAX_FAN_POINTS) {
+            return;
+        }
+
+        // Add a new point at a temperature midway between the last two points
+        const lastPoint = points[points.length - 1];
+        const secondLastPoint = points.length > 1 ? points[points.length - 2] : { temp: 0, speed: 0 };
+        const newTemp = Math.min(100, Math.floor((lastPoint.temp + Math.min(lastPoint.temp + 10, 100)) / 2));
+        const newSpeed = lastPoint.speed;
+
+        const newPoint = { temp: newTemp, speed: newSpeed };
+        points.push(newPoint);
+
+        // Re-init form groups to include the new point
+        this.reinitFormGroup(fanType);
+        this.dirtyFanFormGroup();
+        this.updateFanChartDataset();
+    }
+
+    public removeFanPoint(fanType: 'CPU' | 'GPU', index: number): void {
+        const points = fanType === 'CPU' ? this.cpuFanPoints : this.gpuFanPoints;
+        if (points.length <= MIN_FAN_POINTS) {
+            return;
+        }
+
+        points.splice(index, 1);
+        this.reinitFormGroup(fanType);
+        this.dirtyFanFormGroup();
+        this.updateFanChartDataset();
+    }
+
+    private reinitFormGroup(fanType: 'CPU' | 'GPU'): void {
+        const points = fanType === 'CPU' ? this.cpuFanPoints : this.gpuFanPoints;
+        const initialValues = points.reduce(
+            (acc, { temp, speed }) => {
+                return { ...acc, ...{ [`${temp}c`]: speed } };
+            },
+            {}
+        );
+
+        if (fanType === 'CPU') {
+            this.fanFormGroupCPU = this.fb.group(initialValues);
+        } else {
+            this.fanFormGroupGPU = this.fb.group(initialValues);
+        }
+    }
+
+    public setActiveFanType(fanType: 'CPU' | 'GPU'): void {
+        this.activeFanType = fanType;
+    }
+
+    public toggleTransitionMode(fanType: 'CPU' | 'GPU'): void {
+        if (fanType === 'CPU') {
+            this.cpuTransitionMode = this.cpuTransitionMode === FanTransitionMode.SMOOTH 
+                ? FanTransitionMode.SHARP 
+                : FanTransitionMode.SMOOTH;
+        } else {
+            this.gpuTransitionMode = this.gpuTransitionMode === FanTransitionMode.SMOOTH 
+                ? FanTransitionMode.SHARP 
+                : FanTransitionMode.SMOOTH;
+        }
+        this.dirtyFanFormGroup();
     }
 
     public ngOnDestroy() {
