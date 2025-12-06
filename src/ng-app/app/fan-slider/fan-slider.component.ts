@@ -428,9 +428,9 @@ export class FanSliderComponent implements OnInit {
         // Check if the new temperature conflicts with existing points
         const tempExists = points.some((p, i) => i !== index && p.temp === newTemp);
         if (tempExists) {
-            // Revert to old temperature if conflict exists
-            points[index].temp = oldTemp;
-            console.warn(`Temperature ${newTemp}°C already exists for ${fanType}`);
+            const displayTemp = this.formatTempForInput(newTemp);
+            const unit = this.config.getSettings().fahrenheit ? '°F' : '°C';
+            console.warn(`Temperature ${displayTemp}${unit} already exists for ${fanType}`);
             return;
         }
         
@@ -458,11 +458,8 @@ export class FanSliderComponent implements OnInit {
     }
 
     private getFormValue(temp: number, fanType: 'CPU' | 'GPU'): number {
-        if (fanType === 'CPU') {
-            return this.fanFormGroupCPU.get(`${temp}c`)?.value ?? 0;
-        } else {
-            return this.fanFormGroupGPU.get(`${temp}c`)?.value ?? 0;
-        }
+        const formGroup = fanType === 'CPU' ? this.fanFormGroupCPU : this.fanFormGroupGPU;
+        return formGroup.get(`${temp}c`)?.value ?? 0;
     }
 
     private reinitFormGroup(fanType: 'CPU' | 'GPU'): void {
