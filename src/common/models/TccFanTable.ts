@@ -16,10 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+// Update ITccFanProfile interface (modify existing interface)
 export interface ITccFanProfile {
     name?: string;
     tableCPU?: ITccFanTableEntry[];
     tableGPU?: ITccFanTableEntry[];
+    cpuTransitionMode?: FanTransitionMode;  // NEW
+    gpuTransitionMode?: FanTransitionMode;  // NEW
+}
+
+// Add at the top with other exports
+export enum FanTransitionMode {
+    SHARP = 'sharp',
+    SMOOTH = 'smooth'
 }
 
 export interface ITccFanTableEntry {
@@ -898,20 +908,8 @@ export const customFanPreset: ITccFanProfile = {
     gpuTransitionMode: FanTransitionMode.SMOOTH   // NEW
 };
 
-// Add at the top with other exports
-export enum FanTransitionMode {
-    SHARP = 'sharp',
-    SMOOTH = 'smooth'
-}
 
-// Update ITccFanProfile interface (modify existing interface)
-export interface ITccFanProfile {
-    name?: string;
-    tableCPU?: ITccFanTableEntry[];
-    tableGPU?: ITccFanTableEntry[];
-    cpuTransitionMode?: FanTransitionMode;  // NEW
-    gpuTransitionMode?: FanTransitionMode;  // NEW
-}
+
 
 // Add at the end of file
 export const MIN_FAN_POINTS = 1;
@@ -952,4 +950,3 @@ export function validateFanProfile(profile: ITccFanProfile): boolean {
     
     return true;
 }
-};
