@@ -226,11 +226,10 @@ export class FanSliderComponent implements OnInit {
         direction: "left" | "right",
         fanType: 'CPU' | 'GPU'
     ): number[] {
-        const comparison = direction === "left" ? "<" : ">";
         const points = fanType === 'CPU' ? this.cpuFanPoints : this.gpuFanPoints;
         return points
             .filter((entry: ITccFanTableEntry) =>
-                eval(`${entry.temp} ${comparison} ${temp}`)
+                direction === 'left' ? entry.temp < temp : entry.temp > temp
             )
             .map((entry) => entry.temp);
     }
@@ -289,12 +288,19 @@ export class FanSliderComponent implements OnInit {
             return;
         }
 
-        // Add a new point at a temperature midway between the last two points
+        // Add a new point at a temperature after the last point
         const lastPoint = points[points.length - 1];
-        const secondLastPoint = points.length > 1 ? points[points.length - 2] : { temp: 0, speed: 0 };
-        const newTemp = Math.min(100, Math.floor((lastPoint.temp + Math.min(lastPoint.temp + 10, 100)) / 2));
-        const newSpeed = lastPoint.speed;
+        // Ensure new temperature is unique and within bounds
+        const newTemp = Math.min(100, lastPoint.temp + Math.max(1, Math.floor((100 - lastPoint.temp) / 2)));
+        
+        // Check if this temperature already exists
+        const tempExists = points.some(p => p.temp === newTemp);
+        if (tempExists || newTemp <= lastPoint.temp) {
+            // Can't add a valid point
+            return;
+        }
 
+        const newSpeed = lastPoint.speed;
         const newPoint = { temp: newTemp, speed: newSpeed };
         points.push(newPoint);
 
