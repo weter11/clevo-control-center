@@ -28,7 +28,6 @@ import {
     ITccFanProfile,
     ITccFanTableEntry,
     customFanPreset,
-    FanTransitionMode,
     MIN_FAN_POINTS,
     MAX_FAN_POINTS,
 } from "src/common/models/TccFanTable";
@@ -80,11 +79,6 @@ export class FanSliderComponent implements OnInit {
     public cpuFanPoints: ITccFanTableEntry[] = [];
     public gpuFanPoints: ITccFanTableEntry[] = [];
 
-    // Transition modes
-    public cpuTransitionMode: FanTransitionMode = FanTransitionMode.SMOOTH;
-    public gpuTransitionMode: FanTransitionMode = FanTransitionMode.SMOOTH;
-    public FanTransitionMode = FanTransitionMode; // For template access
-
     // Constants for template access
     public MIN_FAN_POINTS = MIN_FAN_POINTS;
     public MAX_FAN_POINTS = MAX_FAN_POINTS;
@@ -133,10 +127,6 @@ export class FanSliderComponent implements OnInit {
             {}
         );
         this.fanFormGroupGPU = this.fb.group(gpuInitialValues);
-
-        // Initialize transition modes
-        this.cpuTransitionMode = fanCurve.cpuTransitionMode || FanTransitionMode.SMOOTH;
-        this.gpuTransitionMode = fanCurve.gpuTransitionMode || FanTransitionMode.SMOOTH;
     }
 
     public patchFanFormGroup(ac: AbstractControl): void {
@@ -169,9 +159,7 @@ export class FanSliderComponent implements OnInit {
         }));
         return {
             tableCPU,
-            tableGPU,
-            cpuTransitionMode: this.cpuTransitionMode,
-            gpuTransitionMode: this.gpuTransitionMode
+            tableGPU
         };
     }
 
@@ -289,32 +277,59 @@ export class FanSliderComponent implements OnInit {
             return;
         }
 
-        // Constants for temperature point calculation
-        const MAX_TEMP = 100;
-        const MIN_TEMP_INCREMENT = 1;
-        const TEMP_SPACING_DIVISOR = 2;
+        let newTemp: number;
+        let newSpeed: number;
+        let insertIndex: number;
 
-        // Add a new point at a temperature after the last point
-        const lastPoint = points[points.length - 1];
-        const remainingTempRange = MAX_TEMP - lastPoint.temp;
-        
-        // Ensure new temperature is unique and within bounds
-        // Place it halfway between last point and max temperature, with minimum increment
-        const newTemp = Math.min(
-            MAX_TEMP, 
-            lastPoint.temp + Math.max(MIN_TEMP_INCREMENT, Math.floor(remainingTempRange / TEMP_SPACING_DIVISOR))
-        );
-        
-        // Check if this temperature already exists or is invalid
-        const tempExists = points.some(p => p.temp === newTemp);
-        if (tempExists || newTemp <= lastPoint.temp) {
-            console.warn(`Cannot add point: no valid temperature available for ${fanType} (last point at ${lastPoint.temp}°C)`);
-            return;
+        if (points.length === 0) {
+            // Edge case: no points exist yet
+            newTemp = 50;
+            newSpeed = 50;
+            insertIndex = 0;
+        } else if (points.length === 1) {
+            // Special case: only one point exists
+            // Add a point either before or after based on where there's more room
+            const singlePoint = points[0];
+            if (singlePoint.temp < 50) {
+                // Add point after
+                newTemp = Math.min(100, singlePoint.temp + 50);
+                insertIndex = 1;
+            } else {
+                // Add point before
+                newTemp = Math.max(0, singlePoint.temp - 50);
+                insertIndex = 0;
+            }
+            newSpeed = singlePoint.speed;
+        } else {
+            // Find the largest gap between consecutive points
+            let maxGap = 0;
+            insertIndex = 1;
+            
+            for (let i = 0; i < points.length - 1; i++) {
+                const gap = points[i + 1].temp - points[i].temp;
+                if (gap > maxGap) {
+                    maxGap = gap;
+                    insertIndex = i + 1;
+                }
+            }
+            
+            // Calculate new temperature as midpoint of the largest gap
+            const prevPoint = points[insertIndex - 1];
+            const nextPoint = points[insertIndex];
+            newTemp = Math.floor((prevPoint.temp + nextPoint.temp) / 2);
+            
+            // If the gap is too small (temps would be identical), we can't add a point
+            if (newTemp === prevPoint.temp || newTemp === nextPoint.temp) {
+                console.warn(`Cannot add point: no valid temperature gap available for ${fanType}`);
+                return;
+            }
+            
+            // Interpolate speed for the new point
+            newSpeed = Math.floor((prevPoint.speed + nextPoint.speed) / 2);
         }
 
-        const newSpeed = lastPoint.speed;
         const newPoint = { temp: newTemp, speed: newSpeed };
-        points.push(newPoint);
+        points.splice(insertIndex, 0, newPoint);
 
         // Re-init form groups to include the new point
         this.reinitFormGroup(fanType);
@@ -352,19 +367,6 @@ export class FanSliderComponent implements OnInit {
 
     public setActiveFanType(fanType: 'CPU' | 'GPU'): void {
         this.activeFanType = fanType;
-    }
-
-    public toggleTransitionMode(fanType: 'CPU' | 'GPU'): void {
-        if (fanType === 'CPU') {
-            this.cpuTransitionMode = this.cpuTransitionMode === FanTransitionMode.SMOOTH 
-                ? FanTransitionMode.SHARP 
-                : FanTransitionMode.SMOOTH;
-        } else {
-            this.gpuTransitionMode = this.gpuTransitionMode === FanTransitionMode.SMOOTH 
-                ? FanTransitionMode.SHARP 
-                : FanTransitionMode.SMOOTH;
-        }
-        this.dirtyFanFormGroup();
     }
 
     public ngOnDestroy() {
