@@ -34,8 +34,9 @@ jobs:
           python-version: '3.10'
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
-        run: npm install @types/minimatch@3.0.5 --save-dev
+        run: |
+          npm install --legacy-peer-deps
+          npm install @types/minimatch@3.0.5 --save-dev
       
       - name: Build project
         run: npm run build
