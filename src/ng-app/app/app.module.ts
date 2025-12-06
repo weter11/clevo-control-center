@@ -97,12 +97,18 @@ import { PrimeSelectComponent } from './prime-select/prime-select.component';
 import { PrimeDialogComponent } from './prime-dialog/prime-dialog.component';
 import { FanSliderComponent } from './fan-slider/fan-slider.component';
 
+import { FanCurveEditorComponent } from './fan-curve-editor/fan-curve-editor.component';
+
+
 registerLocaleData(localeDe, 'de', localeDeExtra);
 
 declare const require;
 
 @NgModule({
   declarations: [
+// ... existing components ...
+    FanCurveEditorComponent,  // ADD THIS LINE
+  // ... rest of module ...
     AppComponent,
     ProfileManagerComponent,
 
