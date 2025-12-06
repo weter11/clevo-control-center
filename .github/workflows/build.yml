@@ -1,0 +1,41 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [main, feature/advanced-fan-control]
+  pull_request:
+    branches: [main, feature/advanced-fan-control]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ make libudev-dev
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Run common tests
+        run: npm run test-common
+      
+      - name: Run service-app tests
+        run: npm run test-service-app
