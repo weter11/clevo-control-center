@@ -294,6 +294,14 @@ export class FanControlWorker extends DaemonWorker {
 
                 this.fans.get(fanNumber).setFanProfile(currentFanProfile);
             }
+
+            // Set transition mode based on fan type
+            // Fan 1 is CPU, fans 2 and 3 are GPU
+            if (fanNumber === 1) {
+                this.fans.get(fanNumber).transitionMode = currentFanProfile.cpuTransitionMode;
+            } else {
+                this.fans.get(fanNumber).transitionMode = currentFanProfile.gpuTransitionMode;
+            }
         }
     }
 

@@ -132,6 +132,48 @@ describe('FanLogic ValueBuffer', () => {
     });
 });
 
+describe('FanControlLogic TransitionMode', () => {
+    const { FanControlLogic, FAN_LOGIC } = require('./FanControlLogic');
+    const { FanTransitionMode } = require('../../common/models/TccFanTable');
+
+    let fanLogic: any;
+    const testProfile = {
+        tableCPU: [
+            { temp: 0, speed: 0 },
+            { temp: 50, speed: 50 },
+            { temp: 100, speed: 100 }
+        ],
+        tableGPU: [
+            { temp: 0, speed: 0 },
+            { temp: 50, speed: 50 },
+            { temp: 100, speed: 100 }
+        ],
+        cpuTransitionMode: FanTransitionMode.SMOOTH,
+        gpuTransitionMode: FanTransitionMode.SHARP
+    };
+
+    beforeEach(() => {
+        fanLogic = new FanControlLogic(testProfile, FAN_LOGIC.CPU);
+    });
+
+    it('should default to SMOOTH transition mode', () => {
+        expect(fanLogic.transitionMode).toBe(FanTransitionMode.SMOOTH);
+    });
+
+    it('should allow setting transition mode', () => {
+        fanLogic.transitionMode = FanTransitionMode.SHARP;
+        expect(fanLogic.transitionMode).toBe(FanTransitionMode.SHARP);
+
+        fanLogic.transitionMode = FanTransitionMode.SMOOTH;
+        expect(fanLogic.transitionMode).toBe(FanTransitionMode.SMOOTH);
+    });
+
+    it('should default to SMOOTH when set to undefined', () => {
+        fanLogic.transitionMode = undefined;
+        expect(fanLogic.transitionMode).toBe(FanTransitionMode.SMOOTH);
+    });
+});
+
 class OriginalValueBuffer {
     private bufferData: Array<number>;
     private bufferMaxSize = 13; // Buffer max size
