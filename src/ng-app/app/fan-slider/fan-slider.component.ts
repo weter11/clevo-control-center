@@ -30,6 +30,8 @@ import {
     customFanPreset,
     MIN_FAN_POINTS,
     MAX_FAN_POINTS,
+    MIN_TEMP,
+    MAX_TEMP,
 } from "src/common/models/TccFanTable";
 import {
     fantableDatasets,
@@ -281,22 +283,26 @@ export class FanSliderComponent implements OnInit {
         let newSpeed: number;
         let insertIndex: number;
 
+        const DEFAULT_TEMP = 50;
+        const DEFAULT_SPEED = 50;
+        const TEMP_OFFSET = 50;
+        
         if (points.length === 0) {
             // Edge case: no points exist yet
-            newTemp = 50;
-            newSpeed = 50;
+            newTemp = DEFAULT_TEMP;
+            newSpeed = DEFAULT_SPEED;
             insertIndex = 0;
         } else if (points.length === 1) {
             // Special case: only one point exists
             // Add a point either before or after based on where there's more room
             const singlePoint = points[0];
-            if (singlePoint.temp < 50) {
+            if (singlePoint.temp < DEFAULT_TEMP) {
                 // Add point after
-                newTemp = Math.min(100, singlePoint.temp + 50);
+                newTemp = Math.min(MAX_TEMP, singlePoint.temp + TEMP_OFFSET);
                 insertIndex = 1;
             } else {
                 // Add point before
-                newTemp = Math.max(0, singlePoint.temp - 50);
+                newTemp = Math.max(MIN_TEMP, singlePoint.temp - TEMP_OFFSET);
                 insertIndex = 0;
             }
             newSpeed = singlePoint.speed;
@@ -306,8 +312,8 @@ export class FanSliderComponent implements OnInit {
             let maxGap = 0;
             insertIndex = 1;
             
-            // Check gap before first point (0 to first point)
-            const firstGap = points[0].temp - 0;
+            // Check gap before first point (MIN_TEMP to first point)
+            const firstGap = points[0].temp - MIN_TEMP;
             if (firstGap > maxGap) {
                 maxGap = firstGap;
                 insertIndex = 0;
@@ -322,8 +328,8 @@ export class FanSliderComponent implements OnInit {
                 }
             }
             
-            // Check gap after last point (last point to 100)
-            const lastGap = 100 - points[points.length - 1].temp;
+            // Check gap after last point (last point to MAX_TEMP)
+            const lastGap = MAX_TEMP - points[points.length - 1].temp;
             if (lastGap > maxGap) {
                 maxGap = lastGap;
                 insertIndex = points.length;
@@ -337,14 +343,14 @@ export class FanSliderComponent implements OnInit {
             
             if (insertIndex === 0) {
                 // Inserting before first point
-                prevTemp = 0;
+                prevTemp = MIN_TEMP;
                 nextTemp = points[0].temp;
                 prevSpeed = points[0].speed;
                 nextSpeed = points[0].speed;
             } else if (insertIndex === points.length) {
                 // Inserting after last point
                 prevTemp = points[points.length - 1].temp;
-                nextTemp = 100;
+                nextTemp = MAX_TEMP;
                 prevSpeed = points[points.length - 1].speed;
                 nextSpeed = points[points.length - 1].speed;
             } else {
