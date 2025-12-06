@@ -28,16 +28,6 @@ along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
 
     <!-- CPU Fan Configuration -->
     <div *ngIf="activeFanType === 'CPU' && cpuFanPoints.length > 0">
-        <div style="margin-bottom: 15px;">
-            <mat-slide-toggle 
-                [checked]="cpuTransitionMode === FanTransitionMode.SMOOTH"
-                (change)="toggleTransitionMode('CPU')">
-                <span i18n="@@fanSliderTransitionModeLabel">Smooth Transition</span>
-                <span *ngIf="cpuTransitionMode === FanTransitionMode.SMOOTH"> (Gradual speed changes)</span>
-                <span *ngIf="cpuTransitionMode === FanTransitionMode.SHARP"> (Sharp: Instant speed changes)</span>
-            </mat-slide-toggle>
-        </div>
-
         <div style="margin-bottom: 10px;">
             <button mat-raised-button color="primary" 
                 (click)="addFanPoint('CPU')" 
@@ -48,45 +38,33 @@ along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
             <span style="margin-left: 10px;" i18n="@@fanSliderPointCountLabel">Points: {{ cpuFanPoints.length }} / {{ MAX_FAN_POINTS }}</span>
         </div>
 
-        <mat-grid-list [cols]="cpuFanPoints.length" rowHeight="150px">
-            <mat-grid-tile *ngFor="let fanTableEntry of cpuFanPoints; let i = index" [colspan]="1">
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                    <mat-slider vertical="true" thumbLabel color="primary"
-                        [formControl]="fanFormGroupCPU.controls[fanTableEntry.temp+'c']" 
-                        (change)="dirtyFanFormGroup()"
-                        (change)="updateComponents($event.value, fanTableEntry.temp, 'CPU')">
-                    </mat-slider>
-                </div>
-            </mat-grid-tile>
-        </mat-grid-list>
-
-        <mat-grid-list [cols]="cpuFanPoints.length" rowHeight="40px">
-            <mat-grid-tile *ngFor="let fanTableEntry of cpuFanPoints; let i = index" [colspan]="1">
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                    <div>{{ formatTemperatureLabel(fanTableEntry.temp) }}</div>
-                    <button mat-icon-button 
-                        (click)="removeFanPoint('CPU', i)"
-                        [disabled]="cpuFanPoints.length <= MIN_FAN_POINTS"
-                        style="margin-top: 2px;">
-                        <mat-icon style="font-size: 16px; height: 16px; width: 16px;">remove_circle</mat-icon>
-                    </button>
-                </div>
-            </mat-grid-tile>
-        </mat-grid-list>
+        <div class="fan-points-container">
+            <div class="fan-point" *ngFor="let fanTableEntry of cpuFanPoints; let i = index">
+                <mat-slider vertical="true" thumbLabel color="primary"
+                    [formControl]="fanFormGroupCPU.controls[fanTableEntry.temp+'c']" 
+                    (change)="dirtyFanFormGroup()"
+                    (change)="updateComponents($event.value, fanTableEntry.temp, 'CPU')">
+                </mat-slider>
+                <mat-form-field class="fan-point-temp-input" appearance="outline">
+                    <input matInput type="number" 
+                           [ngModel]="formatTempForInput(fanTableEntry.temp)"
+                           (ngModelChange)="onTempChange(i, 'CPU', $event)"
+                           [min]="config.getSettings().fahrenheit ? 32 : 0" 
+                           [max]="config.getSettings().fahrenheit ? 212 : 100"
+                           [attr.aria-label]="'Temperature for CPU point ' + (i + 1)">
+                    <span matSuffix>{{ config.getSettings().fahrenheit ? '°F' : '°C' }}</span>
+                </mat-form-field>
+                <button mat-icon-button 
+                    (click)="removeFanPoint('CPU', i)"
+                    [disabled]="cpuFanPoints.length <= MIN_FAN_POINTS">
+                    <mat-icon>remove_circle</mat-icon>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- GPU Fan Configuration -->
     <div *ngIf="activeFanType === 'GPU' && gpuFanPoints.length > 0">
-        <div style="margin-bottom: 15px;">
-            <mat-slide-toggle 
-                [checked]="gpuTransitionMode === FanTransitionMode.SMOOTH"
-                (change)="toggleTransitionMode('GPU')">
-                <span i18n="@@fanSliderTransitionModeLabel">Smooth Transition</span>
-                <span *ngIf="gpuTransitionMode === FanTransitionMode.SMOOTH"> (Gradual speed changes)</span>
-                <span *ngIf="gpuTransitionMode === FanTransitionMode.SHARP"> (Sharp: Instant speed changes)</span>
-            </mat-slide-toggle>
-        </div>
-
         <div style="margin-bottom: 10px;">
             <button mat-raised-button color="primary" 
                 (click)="addFanPoint('GPU')" 
@@ -97,31 +75,29 @@ along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
             <span style="margin-left: 10px;" i18n="@@fanSliderPointCountLabel">Points: {{ gpuFanPoints.length }} / {{ MAX_FAN_POINTS }}</span>
         </div>
 
-        <mat-grid-list [cols]="gpuFanPoints.length" rowHeight="150px">
-            <mat-grid-tile *ngFor="let fanTableEntry of gpuFanPoints; let i = index" [colspan]="1">
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                    <mat-slider vertical="true" thumbLabel color="primary"
-                        [formControl]="fanFormGroupGPU.controls[fanTableEntry.temp+'c']" 
-                        (change)="dirtyFanFormGroup()"
-                        (change)="updateComponents($event.value, fanTableEntry.temp, 'GPU')">
-                    </mat-slider>
-                </div>
-            </mat-grid-tile>
-        </mat-grid-list>
-
-        <mat-grid-list [cols]="gpuFanPoints.length" rowHeight="40px">
-            <mat-grid-tile *ngFor="let fanTableEntry of gpuFanPoints; let i = index" [colspan]="1">
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                    <div>{{ formatTemperatureLabel(fanTableEntry.temp) }}</div>
-                    <button mat-icon-button 
-                        (click)="removeFanPoint('GPU', i)"
-                        [disabled]="gpuFanPoints.length <= MIN_FAN_POINTS"
-                        style="margin-top: 2px;">
-                        <mat-icon style="font-size: 16px; height: 16px; width: 16px;">remove_circle</mat-icon>
-                    </button>
-                </div>
-            </mat-grid-tile>
-        </mat-grid-list>
+        <div class="fan-points-container">
+            <div class="fan-point" *ngFor="let fanTableEntry of gpuFanPoints; let i = index">
+                <mat-slider vertical="true" thumbLabel color="primary"
+                    [formControl]="fanFormGroupGPU.controls[fanTableEntry.temp+'c']" 
+                    (change)="dirtyFanFormGroup()"
+                    (change)="updateComponents($event.value, fanTableEntry.temp, 'GPU')">
+                </mat-slider>
+                <mat-form-field class="fan-point-temp-input" appearance="outline">
+                    <input matInput type="number" 
+                           [ngModel]="formatTempForInput(fanTableEntry.temp)"
+                           (ngModelChange)="onTempChange(i, 'GPU', $event)"
+                           [min]="config.getSettings().fahrenheit ? 32 : 0" 
+                           [max]="config.getSettings().fahrenheit ? 212 : 100"
+                           [attr.aria-label]="'Temperature for GPU point ' + (i + 1)">
+                    <span matSuffix>{{ config.getSettings().fahrenheit ? '°F' : '°C' }}</span>
+                </mat-form-field>
+                <button mat-icon-button 
+                    (click)="removeFanPoint('GPU', i)"
+                    [disabled]="gpuFanPoints.length <= MIN_FAN_POINTS">
+                    <mat-icon>remove_circle</mat-icon>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Chart Toggle and Display -->

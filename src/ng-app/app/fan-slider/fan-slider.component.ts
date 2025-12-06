@@ -28,9 +28,10 @@ import {
     ITccFanProfile,
     ITccFanTableEntry,
     customFanPreset,
-    FanTransitionMode,
     MIN_FAN_POINTS,
     MAX_FAN_POINTS,
+    MIN_TEMP,
+    MAX_TEMP,
 } from "src/common/models/TccFanTable";
 import {
     fantableDatasets,
@@ -80,11 +81,6 @@ export class FanSliderComponent implements OnInit {
     public cpuFanPoints: ITccFanTableEntry[] = [];
     public gpuFanPoints: ITccFanTableEntry[] = [];
 
-    // Transition modes
-    public cpuTransitionMode: FanTransitionMode = FanTransitionMode.SMOOTH;
-    public gpuTransitionMode: FanTransitionMode = FanTransitionMode.SMOOTH;
-    public FanTransitionMode = FanTransitionMode; // For template access
-
     // Constants for template access
     public MIN_FAN_POINTS = MIN_FAN_POINTS;
     public MAX_FAN_POINTS = MAX_FAN_POINTS;
@@ -133,10 +129,6 @@ export class FanSliderComponent implements OnInit {
             {}
         );
         this.fanFormGroupGPU = this.fb.group(gpuInitialValues);
-
-        // Initialize transition modes
-        this.cpuTransitionMode = fanCurve.cpuTransitionMode || FanTransitionMode.SMOOTH;
-        this.gpuTransitionMode = fanCurve.gpuTransitionMode || FanTransitionMode.SMOOTH;
     }
 
     public patchFanFormGroup(ac: AbstractControl): void {
@@ -169,9 +161,7 @@ export class FanSliderComponent implements OnInit {
         }));
         return {
             tableCPU,
-            tableGPU,
-            cpuTransitionMode: this.cpuTransitionMode,
-            gpuTransitionMode: this.gpuTransitionMode
+            tableGPU
         };
     }
 
@@ -196,6 +186,20 @@ export class FanSliderComponent implements OnInit {
         else {
             return temp.toString() + " °C";
         }
+    }
+
+    formatTempForInput(tempCelsius: number): number {
+        if (this.config.getSettings().fahrenheit) {
+            return Math.round(this.utils.getFahrenheitFromCelsius(tempCelsius));
+        }
+        return tempCelsius;
+    }
+
+    parseTempFromInput(inputTemp: number): number {
+        if (this.config.getSettings().fahrenheit) {
+            return Math.round(this.utils.getCelsiusFromFahrenheit(inputTemp));
+        }
+        return inputTemp;
     }
 
     public async adjustSliderValues(
@@ -289,32 +293,102 @@ export class FanSliderComponent implements OnInit {
             return;
         }
 
-        // Constants for temperature point calculation
-        const MAX_TEMP = 100;
-        const MIN_TEMP_INCREMENT = 1;
-        const TEMP_SPACING_DIVISOR = 2;
+        let newTemp: number;
+        let newSpeed: number;
+        let insertIndex: number;
 
-        // Add a new point at a temperature after the last point
-        const lastPoint = points[points.length - 1];
-        const remainingTempRange = MAX_TEMP - lastPoint.temp;
+        const DEFAULT_TEMP = 50;
+        const DEFAULT_SPEED = 50;
+        const TEMP_OFFSET = 50;
         
-        // Ensure new temperature is unique and within bounds
-        // Place it halfway between last point and max temperature, with minimum increment
-        const newTemp = Math.min(
-            MAX_TEMP, 
-            lastPoint.temp + Math.max(MIN_TEMP_INCREMENT, Math.floor(remainingTempRange / TEMP_SPACING_DIVISOR))
-        );
-        
-        // Check if this temperature already exists or is invalid
-        const tempExists = points.some(p => p.temp === newTemp);
-        if (tempExists || newTemp <= lastPoint.temp) {
-            console.warn(`Cannot add point: no valid temperature available for ${fanType} (last point at ${lastPoint.temp}°C)`);
-            return;
+        if (points.length === 0) {
+            // Edge case: no points exist yet
+            newTemp = DEFAULT_TEMP;
+            newSpeed = DEFAULT_SPEED;
+            insertIndex = 0;
+        } else if (points.length === 1) {
+            // Special case: only one point exists
+            // Add a point either before or after based on where there's more room
+            const singlePoint = points[0];
+            if (singlePoint.temp < DEFAULT_TEMP) {
+                // Add point after
+                newTemp = Math.min(MAX_TEMP, singlePoint.temp + TEMP_OFFSET);
+                insertIndex = 1;
+            } else {
+                // Add point before
+                newTemp = Math.max(MIN_TEMP, singlePoint.temp - TEMP_OFFSET);
+                insertIndex = 0;
+            }
+            newSpeed = singlePoint.speed;
+        } else {
+            // Find the largest gap between consecutive points
+            // Also consider gaps before first point and after last point
+            let maxGap = 0;
+            insertIndex = 1;
+            
+            // Check gap before first point (MIN_TEMP to first point)
+            const firstGap = points[0].temp - MIN_TEMP;
+            if (firstGap > maxGap) {
+                maxGap = firstGap;
+                insertIndex = 0;
+            }
+            
+            // Check gaps between consecutive points
+            for (let i = 0; i < points.length - 1; i++) {
+                const gap = points[i + 1].temp - points[i].temp;
+                if (gap > maxGap) {
+                    maxGap = gap;
+                    insertIndex = i + 1;
+                }
+            }
+            
+            // Check gap after last point (last point to MAX_TEMP)
+            const lastGap = MAX_TEMP - points[points.length - 1].temp;
+            if (lastGap > maxGap) {
+                maxGap = lastGap;
+                insertIndex = points.length;
+            }
+            
+            // Calculate new temperature as midpoint of the largest gap
+            let prevTemp: number;
+            let nextTemp: number;
+            let prevSpeed: number;
+            let nextSpeed: number;
+            
+            if (insertIndex === 0) {
+                // Inserting before first point
+                prevTemp = MIN_TEMP;
+                nextTemp = points[0].temp;
+                prevSpeed = points[0].speed;
+                nextSpeed = points[0].speed;
+            } else if (insertIndex === points.length) {
+                // Inserting after last point
+                prevTemp = points[points.length - 1].temp;
+                nextTemp = MAX_TEMP;
+                prevSpeed = points[points.length - 1].speed;
+                nextSpeed = points[points.length - 1].speed;
+            } else {
+                // Inserting between two points
+                prevTemp = points[insertIndex - 1].temp;
+                nextTemp = points[insertIndex].temp;
+                prevSpeed = points[insertIndex - 1].speed;
+                nextSpeed = points[insertIndex].speed;
+            }
+            
+            newTemp = Math.round((prevTemp + nextTemp) / 2);
+            
+            // If the gap is too small (temps would be identical), we can't add a point
+            if (newTemp === prevTemp || newTemp === nextTemp) {
+                console.warn(`Cannot add point: no valid temperature gap available for ${fanType}`);
+                return;
+            }
+            
+            // Interpolate speed for the new point
+            newSpeed = Math.round((prevSpeed + nextSpeed) / 2);
         }
 
-        const newSpeed = lastPoint.speed;
         const newPoint = { temp: newTemp, speed: newSpeed };
-        points.push(newPoint);
+        points.splice(insertIndex, 0, newPoint);
 
         // Re-init form groups to include the new point
         this.reinitFormGroup(fanType);
@@ -332,6 +406,60 @@ export class FanSliderComponent implements OnInit {
         this.reinitFormGroup(fanType);
         this.dirtyFanFormGroup();
         this.updateFanChartDataset();
+    }
+
+    public onTempChange(index: number, fanType: 'CPU' | 'GPU', inputTemp: number): void {
+        const points = fanType === 'CPU' ? this.cpuFanPoints : this.gpuFanPoints;
+        
+        // Convert input temperature to Celsius if needed
+        let newTemp = this.parseTempFromInput(inputTemp);
+        
+        // Clamp temperature to valid range in Celsius
+        newTemp = Math.max(MIN_TEMP, Math.min(MAX_TEMP, Math.round(newTemp)));
+        
+        // Get the old temperature before updating
+        const oldTemp = points[index].temp;
+        
+        // If temperature didn't change, no need to update
+        if (oldTemp === newTemp) {
+            return;
+        }
+        
+        // Check if the new temperature conflicts with existing points
+        const tempExists = points.some((p, i) => i !== index && p.temp === newTemp);
+        if (tempExists) {
+            const displayTemp = this.formatTempForInput(newTemp);
+            const unit = this.config.getSettings().fahrenheit ? '°F' : '°C';
+            console.warn(`Temperature ${displayTemp}${unit} already exists for ${fanType}`);
+            return;
+        }
+        
+        // Get the current speed before changing temperature
+        const currentSpeed = this.getFormValue(oldTemp, fanType);
+        
+        // Update the temperature
+        points[index].temp = newTemp;
+        
+        // Sort points by temperature to maintain order
+        points.sort((a, b) => a.temp - b.temp);
+        
+        // Reinitialize form groups to reflect the new temperature
+        this.reinitFormGroup(fanType);
+        
+        // Restore the speed value for the point at its new temperature
+        const formGroup = fanType === 'CPU' ? this.fanFormGroupCPU : this.fanFormGroupGPU;
+        const control = formGroup.get(`${newTemp}c`);
+        if (control) {
+            control.setValue(currentSpeed);
+        }
+        
+        this.dirtyFanFormGroup();
+        this.updateFanChartDataset();
+    }
+
+    private getFormValue(temp: number, fanType: 'CPU' | 'GPU'): number {
+        const formGroup = fanType === 'CPU' ? this.fanFormGroupCPU : this.fanFormGroupGPU;
+        return formGroup.get(`${temp}c`)?.value ?? 0;
     }
 
     private reinitFormGroup(fanType: 'CPU' | 'GPU'): void {
@@ -352,19 +480,6 @@ export class FanSliderComponent implements OnInit {
 
     public setActiveFanType(fanType: 'CPU' | 'GPU'): void {
         this.activeFanType = fanType;
-    }
-
-    public toggleTransitionMode(fanType: 'CPU' | 'GPU'): void {
-        if (fanType === 'CPU') {
-            this.cpuTransitionMode = this.cpuTransitionMode === FanTransitionMode.SMOOTH 
-                ? FanTransitionMode.SHARP 
-                : FanTransitionMode.SMOOTH;
-        } else {
-            this.gpuTransitionMode = this.gpuTransitionMode === FanTransitionMode.SMOOTH 
-                ? FanTransitionMode.SHARP 
-                : FanTransitionMode.SMOOTH;
-        }
-        this.dirtyFanFormGroup();
     }
 
     public ngOnDestroy() {

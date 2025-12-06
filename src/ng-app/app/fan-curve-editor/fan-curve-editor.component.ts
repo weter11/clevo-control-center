@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import { ITccFanProfile, ITccFanTableEntry, FanTransitionMode, MIN_FAN_POINTS, MAX_FAN_POINTS } from 'src/common/models/TccFanTable';
+import { ITccFanProfile, ITccFanTableEntry, MIN_FAN_POINTS, MAX_FAN_POINTS } from 'src/common/models/TccFanTable';
 
 @Component({
     selector: 'app-fan-curve-editor',
@@ -22,10 +22,8 @@ export class FanCurveEditorComponent implements OnInit {
     @Output() profileChange = new EventEmitter<ITccFanProfile>();
     
     public points: ITccFanTableEntry[] = [];
-    public transitionMode: FanTransitionMode = FanTransitionMode.SMOOTH;
     public minPoints = MIN_FAN_POINTS;
     public maxPoints = MAX_FAN_POINTS;
-    public FanTransitionMode = FanTransitionMode;
     
     ngOnInit() {
         this.loadProfile();
@@ -36,10 +34,8 @@ export class FanCurveEditorComponent implements OnInit {
         
         if (this.fanType === 'cpu') {
             this.points = [...(this.fanProfile.tableCPU || [])];
-            this.transitionMode = this.fanProfile.cpuTransitionMode || FanTransitionMode.SMOOTH;
         } else {
             this.points = [...(this.fanProfile.tableGPU || [])];
-            this.transitionMode = this.fanProfile.gpuTransitionMode || FanTransitionMode.SMOOTH;
         }
         
         if (this.points.length === 0) {
@@ -78,10 +74,6 @@ export class FanCurveEditorComponent implements OnInit {
         this.emitChanges();
     }
     
-    public onTransitionModeChange() {
-        this.emitChanges();
-    }
-    
     private sortPoints() {
         this.points.sort((a, b) => a.temp - b.temp);
     }
@@ -91,10 +83,8 @@ export class FanCurveEditorComponent implements OnInit {
         
         if (this.fanType === 'cpu') {
             updatedProfile.tableCPU = [...this.points];
-            updatedProfile.cpuTransitionMode = this.transitionMode;
         } else {
             updatedProfile.tableGPU = [...this.points];
-            updatedProfile.gpuTransitionMode = this.transitionMode;
         }
         
         this.profileChange.emit(updatedProfile);
@@ -103,11 +93,9 @@ export class FanCurveEditorComponent implements OnInit {
     public copyFromOtherFan() {
         const sourceFanType = this.fanType === 'cpu' ? 'gpu' : 'cpu';
         const sourceTable = sourceFanType === 'cpu' ? this.fanProfile.tableCPU : this.fanProfile.tableGPU;
-        const sourceMode = sourceFanType === 'cpu' ? this.fanProfile.cpuTransitionMode : this.fanProfile.gpuTransitionMode;
         
         if (sourceTable) {
             this.points = JSON.parse(JSON.stringify(sourceTable));
-            this.transitionMode = sourceMode || FanTransitionMode.SMOOTH;
             this.emitChanges();
         }
     }

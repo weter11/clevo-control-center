@@ -11,17 +11,6 @@ Licensed under GNU General Public License v3.0 or later.
         </button>
     </div>
     
-    <mat-button-toggle-group [(ngModel)]="transitionMode" (change)="onTransitionModeChange()" class="transition-toggle">
-        <mat-button-toggle [value]="FanTransitionMode.SHARP">
-            <mat-icon>flash_on</mat-icon>
-            Sharp
-        </mat-button-toggle>
-        <mat-button-toggle [value]="FanTransitionMode.SMOOTH">
-            <mat-icon>trending_up</mat-icon>
-            Smooth
-        </mat-button-toggle>
-    </mat-button-toggle-group>
-    
     <div class="points-container">
         <div class="points-header">
             <span>Temperature (°C)</span>

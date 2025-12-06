@@ -103,6 +103,10 @@ export class UtilsService {
     return ((temp * 1.8) + 32);
   }
 
+  public getCelsiusFromFahrenheit(temp: number): number {
+    return ((temp - 32) / 1.8);
+  }
+
   // get Path, e.g. home path  https://www.electronjs.org/docs/latest/api/app#appgetpathname
   public async getPath(path: string): Promise<string>
   {

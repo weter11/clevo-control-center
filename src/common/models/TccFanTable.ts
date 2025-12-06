@@ -17,19 +17,10 @@
  * along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Update ITccFanProfile interface (modify existing interface)
 export interface ITccFanProfile {
     name?: string;
     tableCPU?: ITccFanTableEntry[];
     tableGPU?: ITccFanTableEntry[];
-    cpuTransitionMode?: FanTransitionMode;  // NEW
-    gpuTransitionMode?: FanTransitionMode;  // NEW
-}
-
-// Add at the top with other exports
-export enum FanTransitionMode {
-    SHARP = 'sharp',
-    SMOOTH = 'smooth'
 }
 
 export interface ITccFanTableEntry {
@@ -879,8 +870,6 @@ export const defaultFanProfiles: ITccFanProfile[] = [
     },
 ];
 
-// currently only utilizing CPU table since both have same values, subject to change
-// Modify existing customFanPreset
 export const customFanPreset: ITccFanProfile = {
     tableCPU: [
         { temp: 20, speed: 12 },
@@ -903,9 +892,7 @@ export const customFanPreset: ITccFanProfile = {
         { temp: 80, speed: 79 },
         { temp: 90, speed: 85 },
         { temp: 100, speed: 90 },
-    ],
-    cpuTransitionMode: FanTransitionMode.SMOOTH,  // NEW
-    gpuTransitionMode: FanTransitionMode.SMOOTH   // NEW
+    ]
 };
 
 

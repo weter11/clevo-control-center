@@ -17,7 +17,7 @@
  * along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { manageCriticalTemperature } from '../../common/classes/FanUtils';
-import { ITccFanProfile, ITccFanTableEntry, FanTransitionMode } from '../../common/models/TccFanTable';
+import { ITccFanProfile, ITccFanTableEntry } from '../../common/models/TccFanTable';
 
 export enum FAN_LOGIC { CPU, GPU }
 
@@ -74,15 +74,6 @@ export class FanControlLogic {
     private lastSpeed = 0;
 
     private useTable: string;
-
-    /**
-     * Transition mode for fan speed changes
-     */
-    private _transitionMode: FanTransitionMode = FanTransitionMode.SMOOTH;
-    get transitionMode() { return this._transitionMode; }
-    set transitionMode(mode: FanTransitionMode) {
-        this._transitionMode = mode || FanTransitionMode.SMOOTH;
-    }
 
     /**
      * Minimum fan speed hardware is capable of
@@ -245,10 +236,7 @@ export class FanControlLogic {
         speed = Math.max(0, Math.min(100, speed));
 
         speed = this.applyHwFanLimitations(speed);
-        // In SHARP mode, skip gradual transition; in SMOOTH mode, apply gradual transition
-        if (this._transitionMode === FanTransitionMode.SMOOTH) {
-            speed = this.limitFanSpeedChange(speed);
-        }
+        speed = this.limitFanSpeedChange(speed);
         speed = manageCriticalTemperature(temp, speed)
 
         this.lastSpeed = speed;
