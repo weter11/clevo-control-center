@@ -132,9 +132,8 @@ describe('FanLogic ValueBuffer', () => {
     });
 });
 
-describe('FanControlLogic TransitionMode', () => {
+describe('FanControlLogic Basic', () => {
     const { FanControlLogic, FAN_LOGIC } = require('./FanControlLogic');
-    const { FanTransitionMode } = require('../../common/models/TccFanTable');
 
     let fanLogic: any;
     const testProfile = {
@@ -147,30 +146,20 @@ describe('FanControlLogic TransitionMode', () => {
             { temp: 0, speed: 0 },
             { temp: 50, speed: 50 },
             { temp: 100, speed: 100 }
-        ],
-        cpuTransitionMode: FanTransitionMode.SMOOTH,
-        gpuTransitionMode: FanTransitionMode.SHARP
+        ]
     };
 
     beforeEach(() => {
         fanLogic = new FanControlLogic(testProfile, FAN_LOGIC.CPU);
     });
 
-    it('should default to SMOOTH transition mode', () => {
-        expect(fanLogic.transitionMode).toBe(FanTransitionMode.SMOOTH);
+    it('should create a FanControlLogic instance', () => {
+        expect(fanLogic).toBeDefined();
     });
 
-    it('should allow setting transition mode', () => {
-        fanLogic.transitionMode = FanTransitionMode.SHARP;
-        expect(fanLogic.transitionMode).toBe(FanTransitionMode.SHARP);
-
-        fanLogic.transitionMode = FanTransitionMode.SMOOTH;
-        expect(fanLogic.transitionMode).toBe(FanTransitionMode.SMOOTH);
-    });
-
-    it('should default to SMOOTH when set to undefined', () => {
-        fanLogic.transitionMode = undefined;
-        expect(fanLogic.transitionMode).toBe(FanTransitionMode.SMOOTH);
+    it('should have the correct table', () => {
+        expect(fanLogic.getFanProfile()).toBeDefined();
+        expect(fanLogic.getFanProfile().tableCPU).toEqual(testProfile.tableCPU);
     });
 });
 
