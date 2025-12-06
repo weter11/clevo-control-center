@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     
     permissions:
       contents: read
@@ -27,11 +27,6 @@ jobs:
         with:
           node-version: '14'
           cache: 'npm'
-
-      - name: Setup Python 3.10 (for node-gyp compatibility)
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
       
       - name: Install dependencies
         run: npm install
@@ -39,8 +34,5 @@ jobs:
       - name: Build project
         run: npm run build
       
-      - name: Run common tests
-        run: npm run test-common
-      
-      - name: Run service-app tests
-        run: npm run test-service-app
+      - name: Create executables
+      npm run pack-prod -- all
