@@ -37,6 +37,7 @@ jobs:
         run: |
           npm install --legacy-peer-deps
           npm install @types/minimatch@3.0.5 --save-dev
+          npm install @types/ms@0.7. 31
       
       - name: Build project
         run: npm run build
