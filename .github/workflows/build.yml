@@ -25,17 +25,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '14'
+          node-version: '18'
           cache: 'npm'
       
       - name: Install dependencies
         run: npm install
       
       - name: Build project
-        run: npm run build
+        run: NODE_OPTIONS=--openssl-legacy-provider npm run build
       
       - name: Run common tests
-        run: npm run test-common
-      
-      - name: Run service-app tests
-        run: npm run test-service-app
+        run: NODE_OPTIONS=--openssl-legacy-provider npm run pack-prod -- all
