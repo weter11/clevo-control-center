@@ -35,4 +35,4 @@ jobs:
         run: npm run build
       
       - name: Create executables
-      npm run pack-prod -- all
+        run: npm run pack-prod -- all
