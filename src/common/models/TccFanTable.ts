@@ -870,6 +870,7 @@ export const defaultFanProfiles: ITccFanProfile[] = [
 ];
 
 // currently only utilizing CPU table since both have same values, subject to change
+// Modify existing customFanPreset
 export const customFanPreset: ITccFanProfile = {
     tableCPU: [
         { temp: 20, speed: 12 },
@@ -893,4 +894,62 @@ export const customFanPreset: ITccFanProfile = {
         { temp: 90, speed: 85 },
         { temp: 100, speed: 90 },
     ],
+    cpuTransitionMode: FanTransitionMode.SMOOTH,  // NEW
+    gpuTransitionMode: FanTransitionMode.SMOOTH   // NEW
+};
+
+// Add at the top with other exports
+export enum FanTransitionMode {
+    SHARP = 'sharp',
+    SMOOTH = 'smooth'
+}
+
+// Update ITccFanProfile interface (modify existing interface)
+export interface ITccFanProfile {
+    name?: string;
+    tableCPU?: ITccFanTableEntry[];
+    tableGPU?: ITccFanTableEntry[];
+    cpuTransitionMode?: FanTransitionMode;  // NEW
+    gpuTransitionMode?: FanTransitionMode;  // NEW
+}
+
+// Add at the end of file
+export const MIN_FAN_POINTS = 1;
+export const MAX_FAN_POINTS = 20;
+export const MIN_TEMP = 0;
+export const MAX_TEMP = 100;
+export const MIN_SPEED = 0;
+export const MAX_SPEED = 100;
+
+export function validateFanProfile(profile: ITccFanProfile): boolean {
+    if (!profile) return false;
+    
+    if (profile.tableCPU) {
+        if (profile.tableCPU.length < MIN_FAN_POINTS || 
+            profile.tableCPU.length > MAX_FAN_POINTS) {
+            return false;
+        }
+        
+        for (let i = 1; i < profile.tableCPU.length; i++) {
+            if (profile.tableCPU[i].temp <= profile.tableCPU[i-1].temp) {
+                return false;
+            }
+        }
+    }
+    
+    if (profile.tableGPU) {
+        if (profile.tableGPU.length < MIN_FAN_POINTS || 
+            profile.tableGPU.length > MAX_FAN_POINTS) {
+            return false;
+        }
+        
+        for (let i = 1; i < profile.tableGPU.length; i++) {
+            if (profile.tableGPU[i].temp <= profile.tableGPU[i-1].temp) {
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}
 };
