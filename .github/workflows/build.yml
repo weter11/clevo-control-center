@@ -38,6 +38,11 @@ jobs:
           npm install --legacy-peer-deps
           npm install @types/minimatch@3.0.5 --save-dev
           npm install @types/ms@0.7. 31
+
+      - name: Fix TypeScript compatibility
+        run: |
+          # Add skipLibCheck to tsconfig to avoid @types version conflicts
+          sed -i 's/"compilerOptions": {/"compilerOptions": {\n    "skipLibCheck": true,/' tsconfig.json
       
       - name: Build project
         run: npm run build
