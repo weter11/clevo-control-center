@@ -47,10 +47,10 @@ along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
                 </mat-slider>
                 <mat-form-field class="fan-point-temp-input" appearance="outline">
                     <input matInput type="number" 
-                           [(ngModel)]="fanTableEntry.temp"
+                           [ngModel]="formatTempForInput(fanTableEntry.temp)"
                            (ngModelChange)="onTempChange(i, 'CPU', $event)"
-                           [min]="0" 
-                           [max]="100"
+                           [min]="config.getSettings().fahrenheit ? 32 : 0" 
+                           [max]="config.getSettings().fahrenheit ? 212 : 100"
                            [attr.aria-label]="'Temperature for CPU point ' + (i + 1)">
                     <span matSuffix>{{ config.getSettings().fahrenheit ? '°F' : '°C' }}</span>
                 </mat-form-field>
@@ -84,10 +84,10 @@ along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
                 </mat-slider>
                 <mat-form-field class="fan-point-temp-input" appearance="outline">
                     <input matInput type="number" 
-                           [(ngModel)]="fanTableEntry.temp"
+                           [ngModel]="formatTempForInput(fanTableEntry.temp)"
                            (ngModelChange)="onTempChange(i, 'GPU', $event)"
-                           [min]="0" 
-                           [max]="100"
+                           [min]="config.getSettings().fahrenheit ? 32 : 0" 
+                           [max]="config.getSettings().fahrenheit ? 212 : 100"
                            [attr.aria-label]="'Temperature for GPU point ' + (i + 1)">
                     <span matSuffix>{{ config.getSettings().fahrenheit ? '°F' : '°C' }}</span>
                 </mat-form-field>

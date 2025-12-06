@@ -188,6 +188,20 @@ export class FanSliderComponent implements OnInit {
         }
     }
 
+    formatTempForInput(tempCelsius: number): number {
+        if (this.config.getSettings().fahrenheit) {
+            return Math.round(this.utils.getFahrenheitFromCelsius(tempCelsius));
+        }
+        return tempCelsius;
+    }
+
+    parseTempFromInput(inputTemp: number): number {
+        if (this.config.getSettings().fahrenheit) {
+            return Math.round(this.utils.getCelsiusFromFahrenheit(inputTemp));
+        }
+        return inputTemp;
+    }
+
     public async adjustSliderValues(
         sliderValue: number,
         temp: number,
@@ -394,14 +408,22 @@ export class FanSliderComponent implements OnInit {
         this.updateFanChartDataset();
     }
 
-    public onTempChange(index: number, fanType: 'CPU' | 'GPU', newTemp: number): void {
+    public onTempChange(index: number, fanType: 'CPU' | 'GPU', inputTemp: number): void {
         const points = fanType === 'CPU' ? this.cpuFanPoints : this.gpuFanPoints;
         
-        // Clamp temperature to valid range
+        // Convert input temperature to Celsius if needed
+        let newTemp = this.parseTempFromInput(inputTemp);
+        
+        // Clamp temperature to valid range in Celsius
         newTemp = Math.max(MIN_TEMP, Math.min(MAX_TEMP, Math.round(newTemp)));
         
         // Get the old temperature before updating
         const oldTemp = points[index].temp;
+        
+        // If temperature didn't change, no need to update
+        if (oldTemp === newTemp) {
+            return;
+        }
         
         // Check if the new temperature conflicts with existing points
         const tempExists = points.some((p, i) => i !== index && p.temp === newTemp);
@@ -412,18 +434,24 @@ export class FanSliderComponent implements OnInit {
             return;
         }
         
+        // Get the current speed before changing temperature
+        const currentSpeed = this.getFormValue(oldTemp, fanType);
+        
         // Update the temperature
         points[index].temp = newTemp;
         
         // Sort points by temperature to maintain order
-        const currentSpeed = this.getFormValue(oldTemp, fanType);
         points.sort((a, b) => a.temp - b.temp);
         
         // Reinitialize form groups to reflect the new temperature
         this.reinitFormGroup(fanType);
         
-        // Restore the speed value for the moved point
-        this.setFormValue(newTemp, currentSpeed, fanType);
+        // Restore the speed value for the point at its new temperature
+        const formGroup = fanType === 'CPU' ? this.fanFormGroupCPU : this.fanFormGroupGPU;
+        const control = formGroup.get(`${newTemp}c`);
+        if (control) {
+            control.setValue(currentSpeed);
+        }
         
         this.dirtyFanFormGroup();
         this.updateFanChartDataset();
