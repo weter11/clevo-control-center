@@ -302,9 +302,18 @@ export class FanSliderComponent implements OnInit {
             newSpeed = singlePoint.speed;
         } else {
             // Find the largest gap between consecutive points
+            // Also consider gaps before first point and after last point
             let maxGap = 0;
             insertIndex = 1;
             
+            // Check gap before first point (0 to first point)
+            const firstGap = points[0].temp - 0;
+            if (firstGap > maxGap) {
+                maxGap = firstGap;
+                insertIndex = 0;
+            }
+            
+            // Check gaps between consecutive points
             for (let i = 0; i < points.length - 1; i++) {
                 const gap = points[i + 1].temp - points[i].temp;
                 if (gap > maxGap) {
@@ -313,19 +322,49 @@ export class FanSliderComponent implements OnInit {
                 }
             }
             
+            // Check gap after last point (last point to 100)
+            const lastGap = 100 - points[points.length - 1].temp;
+            if (lastGap > maxGap) {
+                maxGap = lastGap;
+                insertIndex = points.length;
+            }
+            
             // Calculate new temperature as midpoint of the largest gap
-            const prevPoint = points[insertIndex - 1];
-            const nextPoint = points[insertIndex];
-            newTemp = Math.floor((prevPoint.temp + nextPoint.temp) / 2);
+            let prevTemp: number;
+            let nextTemp: number;
+            let prevSpeed: number;
+            let nextSpeed: number;
+            
+            if (insertIndex === 0) {
+                // Inserting before first point
+                prevTemp = 0;
+                nextTemp = points[0].temp;
+                prevSpeed = points[0].speed;
+                nextSpeed = points[0].speed;
+            } else if (insertIndex === points.length) {
+                // Inserting after last point
+                prevTemp = points[points.length - 1].temp;
+                nextTemp = 100;
+                prevSpeed = points[points.length - 1].speed;
+                nextSpeed = points[points.length - 1].speed;
+            } else {
+                // Inserting between two points
+                prevTemp = points[insertIndex - 1].temp;
+                nextTemp = points[insertIndex].temp;
+                prevSpeed = points[insertIndex - 1].speed;
+                nextSpeed = points[insertIndex].speed;
+            }
+            
+            newTemp = Math.round((prevTemp + nextTemp) / 2);
             
             // If the gap is too small (temps would be identical), we can't add a point
-            if (newTemp === prevPoint.temp || newTemp === nextPoint.temp) {
+            if (newTemp === prevTemp || newTemp === nextTemp) {
                 console.warn(`Cannot add point: no valid temperature gap available for ${fanType}`);
                 return;
             }
             
             // Interpolate speed for the new point
-            newSpeed = Math.floor((prevPoint.speed + nextPoint.speed) / 2);
+            newSpeed = Math.round((prevSpeed + nextSpeed) / 2);
         }
 
         const newPoint = { temp: newTemp, speed: newSpeed };
