@@ -1,0 +1,98 @@
+.fan-curve-editor {
+    padding: 16px;
+    
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        
+        h3 {
+            margin: 0;
+            font-weight: 500;
+        }
+        
+        .copy-button {
+            min-width: 120px;
+        }
+    }
+    
+    .transition-toggle {
+        margin-bottom: 20px;
+        width: 100%;
+        
+        mat-button-toggle {
+            width: 50%;
+            
+            mat-icon {
+                margin-right: 8px;
+            }
+        }
+    }
+    
+    .points-container {
+        margin-bottom: 16px;
+        max-height: 400px;
+        overflow-y: auto;
+        
+        .points-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr 80px;
+            gap: 12px;
+            padding: 12px;
+            font-weight: 600;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+            margin-bottom: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        
+        .point-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 80px;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.02);
+            }
+            
+            mat-form-field {
+                margin: 0;
+            }
+            
+            .temp-input, .speed-input {
+                input[type="number"] {
+                    text-align: right;
+                }
+            }
+        }
+    }
+    
+    .add-point-container {
+        display: flex;
+        justify-content: center;
+        padding-top: 8px;
+        
+        button {
+            min-width: 200px;
+        }
+    }
+}
+
+// Dark theme support
+.dark-theme {
+    .points-header {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .point-row:hover {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+}

@@ -1,0 +1,70 @@
+<!--
+Copyright (c) 2025 Clevo Control Center Contributors
+This file is part of Clevo Control Center.
+Licensed under GNU General Public License v3.0 or later.
+-->
+<div class="fan-curve-editor">
+    <div class="header">
+        <h3>{{ fanType === 'cpu' ? 'CPU' : 'GPU' }} Fan Curve</h3>
+        <button mat-raised-button (click)="copyFromOtherFan()" class="copy-button">
+            Copy from {{ fanType === 'cpu' ? 'GPU' : 'CPU' }}
+        </button>
+    </div>
+    
+    <mat-button-toggle-group [(ngModel)]="transitionMode" (change)="onTransitionModeChange()" class="transition-toggle">
+        <mat-button-toggle [value]="FanTransitionMode.SHARP">
+            <mat-icon>flash_on</mat-icon>
+            Sharp
+        </mat-button-toggle>
+        <mat-button-toggle [value]="FanTransitionMode.SMOOTH">
+            <mat-icon>trending_up</mat-icon>
+            Smooth
+        </mat-button-toggle>
+    </mat-button-toggle-group>
+    
+    <div class="points-container">
+        <div class="points-header">
+            <span>Temperature (°C)</span>
+            <span>Fan Speed (%)</span>
+            <span>Actions</span>
+        </div>
+        
+        <div *ngFor="let point of points; let i = index" class="point-row">
+            <mat-form-field appearance="outline" class="temp-input">
+                <mat-label>Temp</mat-label>
+                <input matInput type="number" 
+                       [(ngModel)]="point.temp" 
+                       (ngModelChange)="onTempChange(i)"
+                       min="0" max="100">
+                <span matSuffix>°C</span>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="speed-input">
+                <mat-label>Speed</mat-label>
+                <input matInput type="number" 
+                       [(ngModel)]="point.speed" 
+                       (ngModelChange)="onSpeedChange(i)"
+                       min="0" max="100">
+                <span matSuffix>%</span>
+            </mat-form-field>
+            
+            <button mat-icon-button 
+                    (click)="removePoint(i)" 
+                    [disabled]="points.length <= minPoints"
+                    color="warn"
+                    [matTooltip]="points.length <= minPoints ? 'At least one point required' : 'Remove point'">
+                <mat-icon>delete</mat-icon>
+            </button>
+        </div>
+    </div>
+    
+    <div class="add-point-container">
+        <button mat-raised-button 
+                color="primary" 
+                (click)="addPoint()"
+                [disabled]="points.length >= maxPoints">
+            <mat-icon>add</mat-icon>
+            Add Point ({{ points.length }}/{{ maxPoints }})
+        </button>
+    </div>
+</div>
