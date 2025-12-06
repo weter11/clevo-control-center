@@ -61,6 +61,21 @@ canvas {
     min-height: 20px;
 }
 
+.fan-point-temp-input {
+    width: 100%;
+    max-width: 100px;
+    font-size: 13px;
+}
+
+.fan-point-temp-input input {
+    text-align: center;
+    font-size: 13px;
+}
+
+.fan-point-temp-input .mat-form-field-wrapper {
+    padding-bottom: 0;
+}
+
 .fan-point button {
     min-width: 40px;
     height: 40px;

@@ -45,7 +45,15 @@ along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
                     (change)="dirtyFanFormGroup()"
                     (change)="updateComponents($event.value, fanTableEntry.temp, 'CPU')">
                 </mat-slider>
-                <div class="fan-point-label">{{ formatTemperatureLabel(fanTableEntry.temp) }}</div>
+                <mat-form-field class="fan-point-temp-input" appearance="outline">
+                    <input matInput type="number" 
+                           [(ngModel)]="fanTableEntry.temp"
+                           (ngModelChange)="onTempChange(i, 'CPU', $event)"
+                           [min]="0" 
+                           [max]="100"
+                           [attr.aria-label]="'Temperature for CPU point ' + (i + 1)">
+                    <span matSuffix>{{ config.getSettings().fahrenheit ? '°F' : '°C' }}</span>
+                </mat-form-field>
                 <button mat-icon-button 
                     (click)="removeFanPoint('CPU', i)"
                     [disabled]="cpuFanPoints.length <= MIN_FAN_POINTS">
@@ -74,7 +82,15 @@ along with TUXEDO Control Center.  If not, see <https://www.gnu.org/licenses/>.
                     (change)="dirtyFanFormGroup()"
                     (change)="updateComponents($event.value, fanTableEntry.temp, 'GPU')">
                 </mat-slider>
-                <div class="fan-point-label">{{ formatTemperatureLabel(fanTableEntry.temp) }}</div>
+                <mat-form-field class="fan-point-temp-input" appearance="outline">
+                    <input matInput type="number" 
+                           [(ngModel)]="fanTableEntry.temp"
+                           (ngModelChange)="onTempChange(i, 'GPU', $event)"
+                           [min]="0" 
+                           [max]="100"
+                           [attr.aria-label]="'Temperature for GPU point ' + (i + 1)">
+                    <span matSuffix>{{ config.getSettings().fahrenheit ? '°F' : '°C' }}</span>
+                </mat-form-field>
                 <button mat-icon-button 
                     (click)="removeFanPoint('GPU', i)"
                     [disabled]="gpuFanPoints.length <= MIN_FAN_POINTS">

@@ -394,6 +394,49 @@ export class FanSliderComponent implements OnInit {
         this.updateFanChartDataset();
     }
 
+    public onTempChange(index: number, fanType: 'CPU' | 'GPU', newTemp: number): void {
+        const points = fanType === 'CPU' ? this.cpuFanPoints : this.gpuFanPoints;
+        
+        // Clamp temperature to valid range
+        newTemp = Math.max(MIN_TEMP, Math.min(MAX_TEMP, Math.round(newTemp)));
+        
+        // Get the old temperature before updating
+        const oldTemp = points[index].temp;
+        
+        // Check if the new temperature conflicts with existing points
+        const tempExists = points.some((p, i) => i !== index && p.temp === newTemp);
+        if (tempExists) {
+            // Revert to old temperature if conflict exists
+            points[index].temp = oldTemp;
+            console.warn(`Temperature ${newTemp}°C already exists for ${fanType}`);
+            return;
+        }
+        
+        // Update the temperature
+        points[index].temp = newTemp;
+        
+        // Sort points by temperature to maintain order
+        const currentSpeed = this.getFormValue(oldTemp, fanType);
+        points.sort((a, b) => a.temp - b.temp);
+        
+        // Reinitialize form groups to reflect the new temperature
+        this.reinitFormGroup(fanType);
+        
+        // Restore the speed value for the moved point
+        this.setFormValue(newTemp, currentSpeed, fanType);
+        
+        this.dirtyFanFormGroup();
+        this.updateFanChartDataset();
+    }
+
+    private getFormValue(temp: number, fanType: 'CPU' | 'GPU'): number {
+        if (fanType === 'CPU') {
+            return this.fanFormGroupCPU.get(`${temp}c`)?.value ?? 0;
+        } else {
+            return this.fanFormGroupGPU.get(`${temp}c`)?.value ?? 0;
+        }
+    }
+
     private reinitFormGroup(fanType: 'CPU' | 'GPU'): void {
         const points = fanType === 'CPU' ? this.cpuFanPoints : this.gpuFanPoints;
         const initialValues = points.reduce(
